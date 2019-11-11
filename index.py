@@ -2,6 +2,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import *
 import os
+from tkinter import messagebox
 
 root = Tk()
 selec = IntVar()
@@ -43,8 +44,31 @@ class File:
             frame, text="Desencriptar", padx=90, value=2, variable=selec
         ).grid(row=5, column=0)
 
-        self.botonComenzar = Button(frame, text="Comenzar", padx=30)
+        selec.set(1)
+
+        self.botonComenzar = Button(
+            frame, text="Comenzar", command=lambda: comenzar(self.text), padx=30
+        )
         self.botonComenzar.grid(row=6, column=0, pady=30)
+
+
+def comenzar(text):
+    if len(text.get()) != 0:
+        if text.get().endswith(".bmp"):
+            if selec.get() == 1:
+                messagebox.showinfo("Title", "Encriptar")
+            else:
+                messagebox.showinfo("Title", "Desencriptar")
+        else:
+            messagebox.showinfo(
+                "Error",
+                "Ingrese archivo con extensi" + unichr(243).encode("utf8") + "n .bmp",
+            )
+    else:
+        messagebox.showinfo(
+            "Error",
+            "Ingrese archivo con extensi" + unichr(243).encode("utf8") + "n .bmp",
+        )
 
 
 def abrir_archivo(text):
