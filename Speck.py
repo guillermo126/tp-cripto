@@ -1,5 +1,8 @@
 from __future__ import print_function
 import os
+from PIL import BmpImagePlugin
+import hashlib
+from itertools import cycle
 
 class SpeckCipher(object):
     """Speck Block Cipher Object"""
@@ -315,7 +318,7 @@ def encriptarImagen(ruta, salida):
     block_size = 1
     offset = 0
     cipher = SpeckCipher(0x1f1e, key_size=64, block_size=32, mode='ECB')
-    fileEncrypted = open(salida, "w+")
+    fileEncrypted = open(salida, "wb")
     fileEncrypted.seek(0)
     offsetEncrypted = 0
 
@@ -325,10 +328,10 @@ def encriptarImagen(ruta, salida):
         leerBloque = file.read(block_size)
         cifrarBloque = int.from_bytes(leerBloque, "big")
         bloqueCifrado = cipher.encrypt(cifrarBloque)
-
+        a = bin(bloqueCifrado)
         fileEncrypted.seek(offsetEncrypted)
 
-        fileEncrypted.write(str(bloqueCifrado))
+        fileEncrypted.write(a)
 
         if (offset + block_size < size):
             offset = offset + block_size
@@ -348,7 +351,7 @@ def desencriptarImagen(entrada, salida):
     block_size = 1
     offset = 0
     cipher = SpeckCipher(0x1f1e, key_size=64, block_size=32, mode='ECB')
-    fileEncrypted = open(salida, "w+")
+    fileEncrypted = open(salida, "wb")
     fileEncrypted.seek(0)
     offsetEncrypted = 0
 
@@ -374,10 +377,28 @@ def desencriptarImagen(entrada, salida):
 
 
 if __name__ == "__main__":
-    encriptarImagen("panda.bmp", "panda.enc")
-    desencriptarImagen("panda.enc", "panda2.bmp")
 
 
+    keys = hashlib.md5(b"aaaabbbb").digest()
 
+    input_image = BmpImagePlugin.BmpImageFile("panda.bmp")
 
+    # extract pure image data as bytes
+    image_data = input_image.tobytes()
+
+    # encrypt
+    image_data = bytes(a ^ b for a, b in zip(image_data, cycle(keys)))
+
+    # create new image, update with encrypted data and save
+    output_image = input_image.copy()
+    output_image.frombytes(image_data)
+    output_image.save("panda2.bmp")
+
+    output_data = output_image.tobytes()
+
+    output_data = bytes(b ^ a for a, b in zip(output_data, cycle(keys)))
+
+    output_decryptimage = input_image.copy()
+    output_decryptimage.frombytes(output_data)
+    output_decryptimage.save("pandadec.bmp")
 
